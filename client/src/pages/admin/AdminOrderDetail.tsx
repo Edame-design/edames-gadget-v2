@@ -267,7 +267,7 @@ export default function AdminOrderDetail() {
     return (
       <div className="min-h-screen bg-slate-50">
 
-        <div className="flex min-h-screen">
+       <div className="flex min-h-screen flex-col lg:flex-row">
 
           <AdminSidebar />
 
@@ -305,7 +305,7 @@ export default function AdminOrderDetail() {
     return (
       <div className="min-h-screen bg-slate-50">
 
-        <div className="flex min-h-screen">
+        <div className="flex min-h-screen flex-col lg:flex-row">
 
           <AdminSidebar />
 
@@ -358,7 +358,7 @@ export default function AdminOrderDetail() {
     return (
       <div className="min-h-screen bg-slate-50">
 
-        <div className="flex min-h-screen">
+        <div className="flex min-h-screen flex-col lg:flex-row">
 
           <AdminSidebar />
 
@@ -428,7 +428,7 @@ export default function AdminOrderDetail() {
   return (
     <div className="min-h-screen bg-slate-50">
 
-      <div className="flex min-h-screen">
+     <div className="flex min-h-screen flex-col lg:flex-row">
 
         <AdminSidebar />
 
