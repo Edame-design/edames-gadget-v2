@@ -1,0 +1,15 @@
+{
+  "name": "edames-gadget-v2",
+  "private": true,
+  "version": "2.0.0",
+  "description": "Edame's Gadget — production-oriented full-stack e-commerce platform",
+  "scripts": {
+    "dev": "npm run dev --workspace client",
+    "dev:client": "npm run dev --workspace client",
+    "dev:server": "npm run dev --workspace server",
+    "build": "npm run build --workspace client",
+    "test": "npm run test --workspace client",
+    "install:all": "npm install --workspaces"
+  },
+  "workspaces": ["client", "server"]
+}
