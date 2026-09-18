@@ -98,7 +98,6 @@ function StatCard({
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex items-start justify-between gap-4">
-
         <div>
           <p className="text-sm font-medium text-slate-500">
             {label}
@@ -116,7 +115,6 @@ function StatCard({
         <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-slate-100 text-slate-700">
           <Icon size={21} />
         </div>
-
       </div>
     </div>
   );
@@ -141,23 +139,17 @@ export default function AdminDashboard() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50">
-
-        <div className="flex min-h-screen">
-
+        <div className="flex min-h-screen flex-col lg:flex-row">
           <AdminSidebar />
 
           <main className="min-w-0 flex-1">
-
             <div className="p-5 sm:p-6 lg:p-8">
-
               <div className="mx-auto max-w-7xl">
-
                 <div className="h-9 w-56 animate-pulse rounded-lg bg-slate-200" />
 
                 <div className="mt-3 h-5 w-96 max-w-full animate-pulse rounded-lg bg-slate-200" />
 
                 <div className="mt-8 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-
                   {[1, 2, 3, 4].map(
                     (item) => (
                       <div
@@ -166,25 +158,17 @@ export default function AdminDashboard() {
                       />
                     ),
                   )}
-
                 </div>
 
                 <div className="mt-8 grid gap-6 xl:grid-cols-2">
-
                   <div className="h-96 animate-pulse rounded-2xl bg-slate-200" />
 
                   <div className="h-96 animate-pulse rounded-2xl bg-slate-200" />
-
                 </div>
-
               </div>
-
             </div>
-
           </main>
-
         </div>
-
       </div>
     );
   }
@@ -192,17 +176,12 @@ export default function AdminDashboard() {
   if (isError || !analytics) {
     return (
       <div className="min-h-screen bg-slate-50">
-
-        <div className="flex min-h-screen">
-
+        <div className="flex min-h-screen flex-col lg:flex-row">
           <AdminSidebar />
 
           <main className="min-w-0 flex-1">
-
             <div className="flex min-h-screen items-center justify-center p-6">
-
               <div className="w-full max-w-xl rounded-3xl border border-red-200 bg-white p-8 text-center shadow-sm">
-
                 <div className="mx-auto grid size-16 place-items-center rounded-full bg-red-50 text-red-600">
                   <BarChart3 size={28} />
                 </div>
@@ -227,15 +206,10 @@ export default function AdminDashboard() {
                   <RefreshCw size={16} />
                   Try again
                 </button>
-
               </div>
-
             </div>
-
           </main>
-
         </div>
-
       </div>
     );
   }
@@ -264,23 +238,17 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-
-      <div className="flex min-h-screen">
-
+      <div className="flex min-h-screen flex-col lg:flex-row">
         <AdminSidebar />
 
         <main className="min-w-0 flex-1">
-
           <div className="p-5 sm:p-6 lg:p-8">
-
             <div className="mx-auto max-w-7xl">
 
               {/* HEADER */}
 
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-
                 <div>
-
                   <p className="text-sm font-bold uppercase tracking-[0.18em] text-blue-600">
                     Admin overview
                   </p>
@@ -294,80 +262,77 @@ export default function AdminDashboard() {
                     orders, customers and inventory
                     from one place.
                   </p>
-
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3 self-start">
-  <Link
-    to="/"
-    className="
-      inline-flex
-      items-center
-      justify-center
-      gap-2
-      rounded-xl
-      bg-slate-950
-      px-4
-      py-2.5
-      text-sm
-      font-semibold
-      text-white
-      shadow-sm
-      transition
-      hover:bg-blue-600
-    "
-  >
-    <ShoppingBag size={16} />
-    View Store
-  </Link>
+                  <Link
+                    to="/"
+                    className="
+                      inline-flex
+                      items-center
+                      justify-center
+                      gap-2
+                      rounded-xl
+                      bg-slate-950
+                      px-4
+                      py-2.5
+                      text-sm
+                      font-semibold
+                      text-white
+                      shadow-sm
+                      transition
+                      hover:bg-blue-600
+                    "
+                  >
+                    <ShoppingBag size={16} />
+                    View Store
+                  </Link>
 
-  <button
-    type="button"
-    onClick={() =>
-      refetch()
-    }
-    disabled={isFetching}
-    className="
-      inline-flex
-      items-center
-      justify-center
-      gap-2
-      rounded-xl
-      border
-      border-slate-200
-      bg-white
-      px-4
-      py-2.5
-      text-sm
-      font-semibold
-      text-slate-700
-      shadow-sm
-      transition
-      hover:border-slate-300
-      hover:bg-slate-50
-      disabled:cursor-not-allowed
-      disabled:opacity-60
-    "
-  >
-    <RefreshCw
-      size={16}
-      className={
-        isFetching
-          ? "animate-spin"
-          : ""
-      }
-    />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      refetch()
+                    }
+                    disabled={isFetching}
+                    className="
+                      inline-flex
+                      items-center
+                      justify-center
+                      gap-2
+                      rounded-xl
+                      border
+                      border-slate-200
+                      bg-white
+                      px-4
+                      py-2.5
+                      text-sm
+                      font-semibold
+                      text-slate-700
+                      shadow-sm
+                      transition
+                      hover:border-slate-300
+                      hover:bg-slate-50
+                      disabled:cursor-not-allowed
+                      disabled:opacity-60
+                    "
+                  >
+                    <RefreshCw
+                      size={16}
+                      className={
+                        isFetching
+                          ? "animate-spin"
+                          : ""
+                      }
+                    />
 
-    Refresh
-  </button>
-</div>
-
+                    Refresh
+                  </button>
+                </div>
               </div>
 
               {/* STATS */}
 
               <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-
                 <StatCard
                   label="Total revenue"
                   value={formatCurrency(
@@ -397,7 +362,6 @@ export default function AdminDashboard() {
                   description={`${overview.unitsSold} units sold`}
                   icon={Boxes}
                 />
-
               </div>
 
               {/* MAIN GRID */}
@@ -407,11 +371,8 @@ export default function AdminDashboard() {
                 {/* ORDER STATUS */}
 
                 <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-
                   <div className="flex items-start justify-between gap-4">
-
                     <div>
-
                       <h2 className="text-lg font-black text-slate-950">
                         Order status
                       </h2>
@@ -420,17 +381,14 @@ export default function AdminDashboard() {
                         Current distribution of
                         customer orders.
                       </p>
-
                     </div>
 
                     <div className="grid size-10 place-items-center rounded-xl bg-slate-100 text-slate-700">
                       <ClipboardList size={19} />
                     </div>
-
                   </div>
 
                   <div className="mt-6 space-y-4">
-
                     {(
                       [
                         [
@@ -466,7 +424,6 @@ export default function AdminDashboard() {
                         status,
                         count,
                       ]) => {
-
                         const percentage =
                           totalOrders > 0
                             ? Math.round(
@@ -480,9 +437,7 @@ export default function AdminDashboard() {
                           <div
                             key={status}
                           >
-
                             <div className="flex items-center justify-between text-sm">
-
                               <span className="font-semibold text-slate-700">
                                 {formatStatus(
                                   status,
@@ -492,37 +447,28 @@ export default function AdminDashboard() {
                               <span className="font-bold text-slate-950">
                                 {count}
                               </span>
-
                             </div>
 
                             <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
-
                               <div
                                 className="h-full rounded-full bg-slate-900 transition-all"
                                 style={{
                                   width: `${percentage}%`,
                                 }}
                               />
-
                             </div>
-
                           </div>
                         );
                       },
                     )}
-
                   </div>
-
                 </section>
 
                 {/* STORE HEALTH */}
 
                 <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-
                   <div className="flex items-start justify-between gap-4">
-
                     <div>
-
                       <h2 className="text-lg font-black text-slate-950">
                         Store overview
                       </h2>
@@ -531,19 +477,16 @@ export default function AdminDashboard() {
                         A quick snapshot of store
                         activity.
                       </p>
-
                     </div>
 
                     <div className="grid size-10 place-items-center rounded-xl bg-slate-100 text-slate-700">
                       <BarChart3 size={19} />
                     </div>
-
                   </div>
 
                   <div className="mt-6 grid gap-4 sm:grid-cols-2">
 
                     <div className="rounded-2xl bg-slate-50 p-5">
-
                       <p className="text-sm font-medium text-slate-500">
                         Active orders
                       </p>
@@ -555,11 +498,9 @@ export default function AdminDashboard() {
                       <p className="mt-1 text-xs text-slate-400">
                         Pending through shipped
                       </p>
-
                     </div>
 
                     <div className="rounded-2xl bg-emerald-50 p-5">
-
                       <p className="text-sm font-medium text-emerald-700">
                         Delivered
                       </p>
@@ -571,11 +512,9 @@ export default function AdminDashboard() {
                       <p className="mt-1 text-xs text-emerald-700">
                         Successfully completed
                       </p>
-
                     </div>
 
                     <div className="rounded-2xl bg-blue-50 p-5">
-
                       <p className="text-sm font-medium text-blue-700">
                         Units sold
                       </p>
@@ -587,11 +526,9 @@ export default function AdminDashboard() {
                       <p className="mt-1 text-xs text-blue-700">
                         Across all non-cancelled orders
                       </p>
-
                     </div>
 
                     <div className="rounded-2xl bg-red-50 p-5">
-
                       <p className="text-sm font-medium text-red-700">
                         Cancelled
                       </p>
@@ -603,13 +540,10 @@ export default function AdminDashboard() {
                       <p className="mt-1 text-xs text-red-700">
                         Orders cancelled
                       </p>
-
                     </div>
 
                   </div>
-
                 </section>
-
               </div>
 
               {/* LOWER GRID */}
@@ -619,11 +553,8 @@ export default function AdminDashboard() {
                 {/* TOP PRODUCTS */}
 
                 <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-
                   <div className="flex items-start justify-between gap-4">
-
                     <div>
-
                       <h2 className="text-lg font-black text-slate-950">
                         Top products
                       </h2>
@@ -632,19 +563,16 @@ export default function AdminDashboard() {
                         Best-performing products by
                         units sold.
                       </p>
-
                     </div>
 
                     <Package
                       size={20}
                       className="text-slate-400"
                     />
-
                   </div>
 
                   {topProducts.length === 0 ? (
                     <div className="mt-8 rounded-2xl bg-slate-50 p-8 text-center">
-
                       <Package
                         size={28}
                         className="mx-auto text-slate-300"
@@ -653,11 +581,9 @@ export default function AdminDashboard() {
                       <p className="mt-3 text-sm font-semibold text-slate-600">
                         No product sales yet
                       </p>
-
                     </div>
                   ) : (
                     <div className="mt-5 space-y-3">
-
                       {topProducts.map(
                         (
                           product,
@@ -669,13 +595,11 @@ export default function AdminDashboard() {
                             }
                             className="flex items-center gap-4 rounded-xl border border-slate-100 p-3"
                           >
-
                             <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-slate-100 text-sm font-black text-slate-500">
                               {index + 1}
                             </div>
 
                             <div className="min-w-0 flex-1">
-
                               <p className="truncate text-sm font-bold text-slate-900">
                                 {
                                   product.name
@@ -688,7 +612,6 @@ export default function AdminDashboard() {
                                 }{" "}
                                 units sold
                               </p>
-
                             </div>
 
                             <p className="shrink-0 text-sm font-black text-slate-950">
@@ -696,11 +619,9 @@ export default function AdminDashboard() {
                                 product.revenue,
                               )}
                             </p>
-
                           </div>
                         ),
                       )}
-
                     </div>
                   )}
 
@@ -715,17 +636,13 @@ export default function AdminDashboard() {
                       className="transition-transform group-hover:translate-x-0.5"
                     />
                   </Link>
-
                 </section>
 
                 {/* RECENT ORDERS */}
 
                 <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-
                   <div className="flex items-start justify-between gap-4">
-
                     <div>
-
                       <h2 className="text-lg font-black text-slate-950">
                         Recent orders
                       </h2>
@@ -733,20 +650,16 @@ export default function AdminDashboard() {
                       <p className="mt-1 text-sm text-slate-500">
                         The latest customer purchases.
                       </p>
-
                     </div>
 
                     <ShoppingBag
                       size={20}
                       className="text-slate-400"
                     />
-
                   </div>
 
-                  {recentOrders.length ===
-                  0 ? (
+                  {recentOrders.length === 0 ? (
                     <div className="mt-8 rounded-2xl bg-slate-50 p-8 text-center">
-
                       <ShoppingBag
                         size={28}
                         className="mx-auto text-slate-300"
@@ -760,11 +673,9 @@ export default function AdminDashboard() {
                         Customer orders will appear
                         here.
                       </p>
-
                     </div>
                   ) : (
                     <div className="mt-5 space-y-3">
-
                       {recentOrders.map(
                         (order) => (
                           <Link
@@ -774,13 +685,9 @@ export default function AdminDashboard() {
                             to={`/admin/orders/${order._id}`}
                             className="block rounded-xl border border-slate-100 p-4 transition hover:border-slate-200 hover:bg-slate-50"
                           >
-
                             <div className="flex items-start justify-between gap-4">
-
                               <div className="min-w-0">
-
                                 <div className="flex flex-wrap items-center gap-2">
-
                                   <p className="text-sm font-bold text-slate-950">
                                     #
                                     {order._id
@@ -799,7 +706,6 @@ export default function AdminDashboard() {
                                       order.status,
                                     )}
                                   </span>
-
                                 </div>
 
                                 <p className="mt-1 truncate text-xs text-slate-500">
@@ -815,11 +721,9 @@ export default function AdminDashboard() {
                                     order.createdAt,
                                   )}
                                 </p>
-
                               </div>
 
                               <div className="shrink-0 text-right">
-
                                 <p className="text-sm font-black text-slate-950">
                                   {formatCurrency(
                                     order.total,
@@ -830,15 +734,11 @@ export default function AdminDashboard() {
                                   size={15}
                                   className="ml-auto mt-2 text-slate-400"
                                 />
-
                               </div>
-
                             </div>
-
                           </Link>
                         ),
                       )}
-
                     </div>
                   )}
 
@@ -853,19 +753,14 @@ export default function AdminDashboard() {
                       className="transition-transform group-hover:translate-x-0.5"
                     />
                   </Link>
-
                 </section>
 
               </div>
 
             </div>
-
           </div>
-
         </main>
-
       </div>
-
     </div>
   );
 }
