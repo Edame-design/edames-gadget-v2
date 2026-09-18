@@ -229,7 +229,7 @@ export function Cart() {
 
         if (!isAuthenticated) {
           const updated =
-            updateLocalCartItem(
+            await updateLocalCartItem(
               productId,
               quantity,
             );
@@ -314,7 +314,7 @@ export function Cart() {
 
         if (!isAuthenticated) {
           const updated =
-            removeLocalCartItem(
+            await removeLocalCartItem(
               productId,
             );
 
@@ -391,7 +391,7 @@ export function Cart() {
         setError("");
 
         if (!isAuthenticated) {
-          clearLocalCart();
+          await clearLocalCart();
 
           setItems([]);
 

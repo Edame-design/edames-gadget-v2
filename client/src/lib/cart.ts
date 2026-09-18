@@ -79,6 +79,26 @@ export function clearGuestCart() {
  * ------------------------------------------------------------
  */
 
+function isProduct(
+  value: unknown,
+): value is Product {
+  if (
+    !value ||
+    typeof value !== "object"
+  ) {
+    return false;
+  }
+
+  const product =
+    value as Partial<Product>;
+
+  return (
+    typeof product._id === "string" &&
+    typeof product.name === "string" &&
+    typeof product.price === "number"
+  );
+}
+
 export function mapServerCart(
   cart: ServerCart,
 ): CartItem[] {
@@ -90,15 +110,30 @@ export function mapServerCart(
   }
 
   return cart.items
+    .map((item) => {
+      if (
+        !isProduct(
+          item.productId,
+        )
+      ) {
+        return null;
+      }
+
+      const product =
+        item.productId;
+
+      return {
+        ...product,
+        quantity:
+          item.quantity,
+      };
+    })
     .filter(
-      (item) =>
-        typeof item.productId !==
-        "string",
-    )
-    .map((item) => ({
-      ...(item.productId as Product),
-      quantity: item.quantity,
-    }));
+      (
+        item,
+      ): item is CartItem =>
+        item !== null,
+    );
 }
 
 /**
