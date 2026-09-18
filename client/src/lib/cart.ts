@@ -120,13 +120,16 @@ export function mapServerCart(
       }
 
       const product =
-        item.productId;
+        item.productId as Product;
 
-      return {
-        ...product,
-        quantity:
-          item.quantity,
-      };
+      return Object.assign(
+        {},
+        product,
+        {
+          quantity:
+            item.quantity,
+        },
+      );
     })
     .filter(
       (
