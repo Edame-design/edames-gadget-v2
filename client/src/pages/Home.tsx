@@ -116,12 +116,11 @@ export function Home({
           className="
             group
             relative
-            min-h-[560px]
+            min-h-[480px]
             overflow-hidden
             bg-[#06101e]
             text-white
             sm:min-h-[520px]
-            lg:min-h-[520px]
           "
         >
 
@@ -136,13 +135,12 @@ export function Home({
                 className={`
                   absolute
                   inset-0
-                  bg-contain
+                  bg-cover
                   bg-center
                   bg-no-repeat
                   transition-opacity
                   duration-1000
                   ease-in-out
-                  lg:bg-cover
 
                   ${
                     activeSlide === index
@@ -171,29 +169,9 @@ export function Home({
               absolute
               inset-0
               bg-gradient-to-r
-              from-[#06101e]/90
-              via-[#06101e]/45
+              from-[#06101e]/95
+              via-[#06101e]/55
               to-transparent
-              sm:from-[#06101e]/95
-              sm:via-[#06101e]/55
-            "
-          />
-
-          {/* =====================================
-              MOBILE BOTTOM FADE
-          ===================================== */}
-
-          <div
-            className="
-              pointer-events-none
-              absolute
-              inset-x-0
-              bottom-0
-              h-32
-              bg-gradient-to-t
-              from-[#06101e]/70
-              to-transparent
-              lg:hidden
             "
           />
 
@@ -220,19 +198,17 @@ export function Home({
               relative
               z-10
               flex
-              min-h-[560px]
+              min-h-[480px]
               items-center
               sm:min-h-[520px]
-              lg:min-h-[520px]
             "
           >
             <div
               key={activeSlide}
               className="
                 max-w-xl
-                py-12
+                py-10
                 sm:py-12
-                lg:py-10
                 animate-[heroTextIn_700ms_ease-out]
               "
             >
