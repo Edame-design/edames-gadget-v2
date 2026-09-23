@@ -98,7 +98,7 @@ function getCustomerName(
     return order.userId.name;
   }
 
-  return order.shippingAddress.fullName;
+ return order.shippingAddress?.fullName ?? "Customer";
 }
 
 function getCustomerEmail(
@@ -256,8 +256,8 @@ function OrderCard({
             />
 
             <p className="text-sm leading-5 text-slate-600">
-              {order.shippingAddress.city},{" "}
-              {order.shippingAddress.state}
+              {order.shippingAddress?.city ?? "—"},{" "}
+              {order.shippingAddress?.state ?? "—"}
             </p>
           </div>
         </div>
@@ -581,8 +581,8 @@ export default function AdminOrders() {
                                   </p>
 
                                   <p className="mt-1 text-xs text-slate-400">
-                                    {order.shippingAddress.city},{" "}
-                                    {order.shippingAddress.state}
+                                    {order.shippingAddress?.city ?? "—"},{" "}
+                                    {order.shippingAddress?.state ?? "—"}
                                   </p>
                                 </td>
 

@@ -754,44 +754,38 @@ export default function AdminOrderDetail() {
 
                     <div className="mt-5 rounded-2xl bg-slate-50 p-5">
 
-                      <p className="font-bold text-slate-950">
-                        {
-                          order
-                            .shippingAddress
-                            .fullName
-                        }
-                      </p>
+  {order.shippingAddress ? (
+    <>
+      <p className="font-bold text-slate-950">
+        {order.shippingAddress.fullName}
+      </p>
 
-                      <p className="mt-2 text-sm leading-6 text-slate-600">
-                        {
-                          order
-                            .shippingAddress
-                            .address
-                        }
-                        <br />
-                        {
-                          order
-                            .shippingAddress
-                            .city
-                        }
-                        ,{" "}
-                        {
-                          order
-                            .shippingAddress
-                            .state
-                        }
-                      </p>
+      <p className="mt-2 text-sm leading-6 text-slate-600">
+        {order.shippingAddress.address}
+        <br />
+        {order.shippingAddress.city},{" "}
+        {order.shippingAddress.state}
+      </p>
 
-                      <p className="mt-3 text-sm font-semibold text-slate-700">
-                        Phone:{" "}
-                        {
-                          order
-                            .shippingAddress
-                            .phone
-                        }
-                      </p>
+      <p className="mt-3 text-sm font-semibold text-slate-700">
+        Phone: {order.shippingAddress.phone}
+      </p>
+    </>
+  ) : (
+    <div className="flex items-center gap-3 text-sm text-slate-500">
+      <MapPin
+        size={17}
+        className="shrink-0 text-slate-400"
+      />
 
-                    </div>
+      <span>
+        No delivery address was provided
+        for this order.
+      </span>
+    </div>
+  )}
+
+</div>
 
                   </section>
 

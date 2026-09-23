@@ -459,20 +459,20 @@ export default function CustomerOrderDetail() {
 
                 <div className="text-sm leading-6 text-slate-600">
                   <p className="font-semibold text-slate-950">
-                    {order.shippingAddress.fullName}
+                    {order.shippingAddress?.fullName ?? "—"}
                   </p>
 
                   <p>
-                    {order.shippingAddress.phone}
+                    {order.shippingAddress?.phone ?? "—"}
                   </p>
 
                   <p className="mt-1">
-                    {order.shippingAddress.address}
+                    {order.shippingAddress?.address ?? "—"}
                   </p>
 
                   <p>
-                    {order.shippingAddress.city},{" "}
-                    {order.shippingAddress.state}
+                    {order.shippingAddress?.city ?? "—"},{" "}
+                   {order.shippingAddress?.state ?? "—"}
                   </p>
                 </div>
               </div>

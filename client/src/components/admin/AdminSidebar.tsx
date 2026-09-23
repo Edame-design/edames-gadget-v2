@@ -10,6 +10,7 @@ import {
   Tags,
   Users,
   X,
+  Truck,
 } from "lucide-react";
 
 import {
@@ -43,6 +44,11 @@ const navigation = [
     label: "Categories",
     to: "/admin/categories",
     icon: Tags,
+  },
+  {
+  label: "Delivery Pricing",
+  to: "/admin/delivery",
+  icon: Truck,
   },
   {
     label: "Orders",

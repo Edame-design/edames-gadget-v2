@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 
 import {
+  useCallback,
   useEffect,
   useState,
 } from "react";
@@ -16,6 +17,7 @@ import {
 import {
   Link,
   NavLink,
+  useLocation,
 } from "react-router-dom";
 
 import {
@@ -25,6 +27,10 @@ import {
 import {
   cartCount,
 } from "../lib/cart";
+
+import {
+  getWishlist,
+} from "../lib/wishlist";
 
 import {
   useAuth,
@@ -46,8 +52,14 @@ export function Header() {
   const [count, setCount] =
     useState(cartCount());
 
+  const [wishlistCount, setWishlistCount] =
+    useState(0);
+
   const [scrolled, setScrolled] =
     useState(false);
+
+  const location =
+    useLocation();
 
   const {
     user,
@@ -56,10 +68,10 @@ export function Header() {
   } = useAuth();
 
   /*
-  |--------------------------------------------------------------------------
-  | LOAD CART COUNT
-  |--------------------------------------------------------------------------
-  */
+   * --------------------------------------------------------------------------
+   * LOAD CART COUNT
+   * --------------------------------------------------------------------------
+   */
 
   useEffect(() => {
     let mounted = true;
@@ -116,10 +128,10 @@ export function Header() {
   }, [isAuthenticated]);
 
   /*
-  |--------------------------------------------------------------------------
-  | CART CHANGE LISTENER
-  |--------------------------------------------------------------------------
-  */
+   * --------------------------------------------------------------------------
+   * CART CHANGE LISTENER
+   * --------------------------------------------------------------------------
+   */
 
   useEffect(() => {
     const updateCartCount =
@@ -170,10 +182,154 @@ export function Header() {
   }, [isAuthenticated]);
 
   /*
-  |--------------------------------------------------------------------------
-  | SCROLL EFFECT
-  |--------------------------------------------------------------------------
-  */
+   * --------------------------------------------------------------------------
+   * LOAD WISHLIST COUNT
+   *
+   * This is kept in one function so every refresh mechanism uses
+   * exactly the same source of truth.
+   * --------------------------------------------------------------------------
+   */
+
+  const refreshWishlistCount =
+    useCallback(
+      async () => {
+        try {
+          const wishlist =
+            await getWishlist(
+              isAuthenticated,
+            );
+
+          setWishlistCount(
+            wishlist.length,
+          );
+        } catch (error) {
+          console.error(
+            "Unable to refresh wishlist count:",
+            error,
+          );
+
+          /*
+           * Do not leave an old/stale number
+           * visible if the wishlist cannot be
+           * loaded.
+           */
+          setWishlistCount(0);
+        }
+      },
+      [isAuthenticated],
+    );
+
+  /*
+   * --------------------------------------------------------------------------
+   * INITIAL WISHLIST LOAD + AUTH CHANGE
+   * --------------------------------------------------------------------------
+   */
+
+  useEffect(() => {
+    refreshWishlistCount();
+  }, [
+    refreshWishlistCount,
+  ]);
+
+  /*
+   * --------------------------------------------------------------------------
+   * WISHLIST CHANGE LISTENER
+   *
+   * ProductCard / Wishlist page can notify Header immediately.
+   * --------------------------------------------------------------------------
+   */
+
+  useEffect(() => {
+    window.addEventListener(
+      "wishlist:changed",
+      refreshWishlistCount,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "wishlist:changed",
+        refreshWishlistCount,
+      );
+    };
+  }, [
+    refreshWishlistCount,
+  ]);
+
+  /*
+   * --------------------------------------------------------------------------
+   * REFRESH WISHLIST WHEN ROUTE CHANGES
+   *
+   * This fixes the issue where the number could become stale when navigating
+   * from Shop → Wishlist → Shop or using browser navigation.
+   * --------------------------------------------------------------------------
+   */
+
+  useEffect(() => {
+    refreshWishlistCount();
+  }, [
+    location.pathname,
+    location.search,
+    refreshWishlistCount,
+  ]);
+
+  /*
+   * --------------------------------------------------------------------------
+   * REFRESH WHEN PAGE/TAB BECOMES ACTIVE AGAIN
+   *
+   * Useful when:
+   * - user switches browser tabs
+   * - browser restores the page
+   * - another component changes the wishlist
+   * - browser back/forward restores cached UI
+   * --------------------------------------------------------------------------
+   */
+
+  useEffect(() => {
+    const handleVisibilityChange =
+      () => {
+        if (
+          document.visibilityState ===
+          "visible"
+        ) {
+          refreshWishlistCount();
+        }
+      };
+
+    const handlePageShow =
+      () => {
+        refreshWishlistCount();
+      };
+
+    window.addEventListener(
+      "pageshow",
+      handlePageShow,
+    );
+
+    document.addEventListener(
+      "visibilitychange",
+      handleVisibilityChange,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "pageshow",
+        handlePageShow,
+      );
+
+      document.removeEventListener(
+        "visibilitychange",
+        handleVisibilityChange,
+      );
+    };
+  }, [
+    refreshWishlistCount,
+  ]);
+
+  /*
+   * --------------------------------------------------------------------------
+   * SCROLL EFFECT
+   * --------------------------------------------------------------------------
+   */
 
   useEffect(() => {
     const handleScroll =
@@ -197,10 +353,10 @@ export function Header() {
   }, []);
 
   /*
-  |--------------------------------------------------------------------------
-  | LOGOUT
-  |--------------------------------------------------------------------------
-  */
+   * --------------------------------------------------------------------------
+   * LOGOUT
+   * --------------------------------------------------------------------------
+   */
 
   const handleLogout =
     () => {
@@ -243,38 +399,23 @@ export function Header() {
               flex
               shrink-0
               items-center
-              gap-2.5
-              text-white
             "
             onClick={() =>
               setOpen(false)
             }
           >
-            <span
+            <img
+              src="/logo/edame-gadget-logo.png"
+              alt="Edame's Gadget"
               className="
-                grid
-                size-9
-                place-items-center
-                rounded-xl
-                bg-blue-600
-                text-base
-                font-black
+                h-11
+                w-auto
+                max-w-[180px]
+                object-contain
+                sm:h-12
+                sm:max-w-[200px]
               "
-            >
-              E
-            </span>
-
-            <span
-              className="
-                hidden
-                text-sm
-                font-black
-                tracking-tight
-                sm:block
-              "
-            >
-              EDAME'S GADGET
-            </span>
+            />
           </Link>
 
           {/* DESKTOP NAV */}
@@ -292,7 +433,9 @@ export function Header() {
                 <NavLink
                   key={label}
                   to={to}
-                  className={({ isActive }) =>
+                  className={({
+                    isActive,
+                  }) =>
                     `
                       text-sm
                       font-medium
@@ -321,6 +464,8 @@ export function Header() {
               sm:gap-2
             "
           >
+            {/* SEARCH */}
+
             <button
               type="button"
               aria-label="Search"
@@ -338,10 +483,17 @@ export function Header() {
               <Search size={18} />
             </button>
 
-            <button
-              type="button"
-              aria-label="Wishlist"
+            {/* WISHLIST */}
+
+            <Link
+              to="/wishlist"
+              aria-label={`Wishlist with ${wishlistCount} saved ${
+                wishlistCount === 1
+                  ? "item"
+                  : "items"
+              }`}
               className="
+                relative
                 hidden
                 size-9
                 place-items-center
@@ -353,8 +505,41 @@ export function Header() {
                 sm:grid
               "
             >
-              <Heart size={18} />
-            </button>
+              <Heart
+                size={18}
+                className={
+                  wishlistCount > 0
+                    ? "fill-current text-red-400"
+                    : ""
+                }
+              />
+
+              {wishlistCount > 0 && (
+                <span
+                  className="
+                    absolute
+                    -right-0.5
+                    -top-0.5
+                    grid
+                    min-w-4
+                    place-items-center
+                    rounded-full
+                    bg-red-500
+                    px-1
+                    text-[9px]
+                    font-bold
+                    leading-4
+                    text-white
+                  "
+                >
+                  {wishlistCount > 99
+                    ? "99+"
+                    : wishlistCount}
+                </span>
+              )}
+            </Link>
+
+            {/* CART */}
 
             <Link
               to="/cart"
@@ -400,63 +585,71 @@ export function Header() {
               )}
             </Link>
 
+            {/* DESKTOP ACCOUNT */}
+
             {isAuthenticated ? (
-  <div
-    className="
-      hidden
-      items-center
-      gap-2
-      lg:flex
-    "
-  >
-    <Link
-       to={user?.role === "admin" ? "/admin" : "/account"}
-      className="
-        flex
-        items-center
-        gap-2
-        rounded-lg
-        px-2
-        py-2
-        text-sm
-        text-slate-300
-        transition
-        hover:bg-white/10
-        hover:text-white
-      "
-    >
-      <UserRound
-        size={17}
-      />
+              <div
+                className="
+                  hidden
+                  items-center
+                  gap-2
+                  lg:flex
+                "
+              >
+                <Link
+                  to={
+                    user?.role === "admin"
+                      ? "/admin"
+                      : "/account"
+                  }
+                  className="
+                    flex
+                    items-center
+                    gap-2
+                    rounded-lg
+                    px-2
+                    py-2
+                    text-sm
+                    text-slate-300
+                    transition
+                    hover:bg-white/10
+                    hover:text-white
+                  "
+                >
+                  <UserRound
+                    size={17}
+                  />
 
-      {user?.name && (
-        <span>
-          {user.name}
-        </span>
-      )}
-    </Link>
+                  {user?.name && (
+                    <span>
+                      {user.name}
+                    </span>
+                  )}
+                </Link>
 
-    <button
-      type="button"
-      onClick={handleLogout}
-      aria-label="Log out"
-      className="
-        grid
-        size-9
-        place-items-center
-        rounded-lg
-        text-slate-300
-        transition
-        hover:bg-white/10
-        hover:text-white
-      "
-    >
-      <LogOut
-        size={17}
-      />
-    </button>
-  </div>
-) : (
+                <button
+                  type="button"
+                  onClick={
+                    handleLogout
+                  }
+                  aria-label="Log out"
+                  className="
+                    grid
+                    size-9
+                    place-items-center
+                    rounded-lg
+                    text-slate-300
+                    transition
+                    hover:bg-white/10
+                    hover:text-white
+                  "
+                >
+                  <LogOut
+                    size={17}
+                  />
+                </button>
+              </div>
+            ) : (
               <Link
                 to="/login"
                 className="
@@ -534,7 +727,9 @@ export function Header() {
                     onClick={() =>
                       setOpen(false)
                     }
-                    className={({ isActive }) =>
+                    className={({
+                      isActive,
+                    }) =>
                       `
                         rounded-xl
                         px-4
@@ -555,24 +750,97 @@ export function Header() {
                 ),
               )}
 
+              {/* MOBILE WISHLIST */}
+
+              <Link
+                to="/wishlist"
+                onClick={() =>
+                  setOpen(false)
+                }
+                className="
+                  flex
+                  items-center
+                  justify-between
+                  rounded-xl
+                  px-4
+                  py-3
+                  text-sm
+                  font-medium
+                  text-slate-300
+                  transition
+                  hover:bg-white/5
+                  hover:text-white
+                "
+              >
+                <span className="flex items-center gap-3">
+                  <Heart
+                    size={17}
+                    className={
+                      wishlistCount > 0
+                        ? "fill-current text-red-400"
+                        : ""
+                    }
+                  />
+
+                  Wishlist
+                </span>
+
+                {wishlistCount > 0 && (
+                  <span
+                    className="
+                      grid
+                      min-w-5
+                      place-items-center
+                      rounded-full
+                      bg-red-500
+                      px-1.5
+                      py-0.5
+                      text-[10px]
+                      font-bold
+                      text-white
+                    "
+                  >
+                    {wishlistCount > 99
+                      ? "99+"
+                      : wishlistCount}
+                  </span>
+                )}
+              </Link>
+
               {isAuthenticated ? (
                 <>
                   <Link
-  to={
-    user?.role === "admin"
-      ? "/admin"
-      : "/account"
-  }
-  onClick={() =>
-    setOpen(false)
-  }
-  className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-slate-300 transition hover:bg-white/5 hover:text-white"
->
-  <UserRound size={17} />
-  {user?.role === "admin"
-    ? "Admin Dashboard"
-    : "Account"}
-</Link>
+                    to={
+                      user?.role === "admin"
+                        ? "/admin"
+                        : "/account"
+                    }
+                    onClick={() =>
+                      setOpen(false)
+                    }
+                    className="
+                      flex
+                      items-center
+                      gap-3
+                      rounded-xl
+                      px-4
+                      py-3
+                      text-sm
+                      text-slate-300
+                      transition
+                      hover:bg-white/5
+                      hover:text-white
+                    "
+                  >
+                    <UserRound
+                      size={17}
+                    />
+
+                    {user?.role === "admin"
+                      ? "Admin Dashboard"
+                      : "Account"}
+                  </Link>
+
                   <button
                     type="button"
                     onClick={
@@ -596,6 +864,7 @@ export function Header() {
                     <LogOut
                       size={17}
                     />
+
                     Log out
                   </button>
                 </>

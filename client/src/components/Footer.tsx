@@ -31,19 +31,24 @@ export default function Footer() {
       {/* Main footer */}
       <div className="container-page py-14 sm:py-16 lg:py-20">
         <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1.25fr]">
+
           {/* Brand */}
           <div className="max-w-sm">
             <Link
               to="/"
-              className="inline-flex items-center gap-3"
+              className="inline-flex items-center"
             >
-              <span className="grid size-10 place-items-center rounded-xl bg-blue-600 text-lg font-black">
-                E
-              </span>
-
-              <span className="text-lg font-black tracking-tight">
-                EDAME'S GADGET
-              </span>
+              <img
+                src="/logo/edame-gadget-logo.png"
+                alt="Edame's Gadget"
+                className="
+                  h-20
+                  w-auto
+                  max-w-[240px]
+                  object-contain
+                  object-left
+                "
+              />
             </Link>
 
             <p className="mt-5 text-sm leading-7 text-slate-400">
@@ -146,6 +151,7 @@ export default function Footer() {
             </h3>
 
             <div className="mt-5 space-y-4">
+
               <div className="flex items-start gap-3">
                 <MapPin
                   size={18}
@@ -156,6 +162,7 @@ export default function Footer() {
                   <p className="text-sm font-semibold text-white">
                     Location
                   </p>
+
                   <p className="mt-1 text-sm leading-6 text-slate-400">
                     Nigeria
                   </p>
@@ -172,6 +179,7 @@ export default function Footer() {
                   <p className="text-sm font-semibold text-white">
                     Phone
                   </p>
+
                   <p className="mt-1 text-sm text-slate-400">
                     Contact details coming soon
                   </p>
@@ -188,6 +196,7 @@ export default function Footer() {
                   <p className="text-sm font-semibold text-white">
                     Email
                   </p>
+
                   <p className="mt-1 text-sm text-slate-400">
                     Contact details coming soon
                   </p>

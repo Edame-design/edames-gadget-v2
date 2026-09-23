@@ -5,6 +5,10 @@ const Order = require("../models/order");
 const Product = require("../models/product");
 
 const {
+  calculateDeliveryFee,
+} = require("../services/deliveryService");
+
+const {
   requireAuth,
   requireAdmin,
 } = require("../middleware/auth");
@@ -25,6 +29,11 @@ const ALLOWED_PAYMENT_METHODS = [
   "cash_on_delivery",
   "bank_transfer",
   "online",
+];
+
+const ALLOWED_DELIVERY_METHODS = [
+  "pickup",
+  "delivery",
 ];
 
 const ORDER_STATUSES = [
@@ -107,6 +116,12 @@ function isPositiveInteger(
   );
 }
 
+/*
+|--------------------------------------------------------------------------
+| SHIPPING ADDRESS VALIDATION
+|--------------------------------------------------------------------------
+*/
+
 function validateShippingAddress(
   shippingAddress,
 ) {
@@ -116,7 +131,9 @@ function validateShippingAddress(
     !shippingAddress ||
     typeof shippingAddress !==
       "object" ||
-    Array.isArray(shippingAddress)
+    Array.isArray(
+      shippingAddress,
+    )
   ) {
     return [
       "Shipping address is required",
@@ -181,6 +198,12 @@ function validateShippingAddress(
   return errors;
 }
 
+/*
+|--------------------------------------------------------------------------
+| CHECKOUT VALIDATION
+|--------------------------------------------------------------------------
+*/
+
 function validateCheckoutBody(
   body,
 ) {
@@ -200,6 +223,7 @@ function validateCheckoutBody(
     items,
     shippingAddress,
     paymentMethod,
+    deliveryMethod = "delivery",
   } = body;
 
   /*
@@ -283,9 +307,6 @@ function validateCheckoutBody(
         |--------------------------------------------------------------------------
         | DEFENSIVE QUANTITY LIMIT
         |--------------------------------------------------------------------------
-        |
-        | The customer should never be able to request an absurd quantity.
-        |
         */
 
         if (
@@ -304,15 +325,40 @@ function validateCheckoutBody(
 
   /*
   |--------------------------------------------------------------------------
-  | SHIPPING
+  | DELIVERY METHOD
   |--------------------------------------------------------------------------
   */
 
-  errors.push(
-    ...validateShippingAddress(
-      shippingAddress,
-    ),
-  );
+  if (
+    !ALLOWED_DELIVERY_METHODS.includes(
+      deliveryMethod,
+    )
+  ) {
+    errors.push(
+      "Invalid delivery method",
+    );
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | SHIPPING ADDRESS
+  |--------------------------------------------------------------------------
+  |
+  | Delivery requires a complete address.
+  | Pickup does not require a shipping address.
+  |
+  */
+
+  if (
+    deliveryMethod ===
+    "delivery"
+  ) {
+    errors.push(
+      ...validateShippingAddress(
+        shippingAddress,
+      ),
+    );
+  }
 
   /*
   |--------------------------------------------------------------------------
@@ -340,14 +386,19 @@ function validateCheckoutBody(
 |
 | IMPORTANT:
 |
-| Price, product name and image are NEVER trusted from the client.
+| Product price, name and image are NEVER trusted from the client.
+|
+| Delivery fee is also NEVER trusted from the client.
 |
 | The client only tells us:
 |
 |   productId
 |   quantity
+|   deliveryMethod
+|   shipping location
 |
-| The server gets the real product information from MongoDB.
+| The server gets the real product and delivery information
+| from MongoDB.
 |
 |--------------------------------------------------------------------------
 */
@@ -376,6 +427,7 @@ router.post(
       items,
       shippingAddress,
       paymentMethod,
+      deliveryMethod = "delivery",
     } = req.body;
 
     const session =
@@ -403,6 +455,7 @@ router.post(
               _id: {
                 $in: productIds,
               },
+
               isActive: true,
             }).session(session);
 
@@ -437,7 +490,7 @@ router.post(
 
           /*
           |--------------------------------------------------------------------------
-          | VERIFY STOCK + BUILD SNAPSHOTS
+          | VERIFY STOCK + BUILD PRODUCT SNAPSHOTS
           |--------------------------------------------------------------------------
           */
 
@@ -503,15 +556,119 @@ router.post(
 
           /*
           |--------------------------------------------------------------------------
-          | SHIPPING FEE
+          | DELIVERY FEE
           |--------------------------------------------------------------------------
           |
-          | Current system uses a fixed shipping fee.
-          | This can later become location-based.
+          | The frontend NEVER sends a trusted delivery fee.
           |
+          | Pickup:
+          |   fee = 0
+          |
+          | Delivery with configured pricing:
+          |   city price takes priority over state price
+          |
+          | Delivery without configured pricing:
+          |   quote_required
+          |
+          |--------------------------------------------------------------------------
           */
 
-          const shippingFee = 0;
+          let deliveryState =
+            null;
+
+          let deliveryCity =
+            null;
+
+          let deliveryZoneId =
+            null;
+
+          let estimatedDeliveryFee =
+            0;
+
+          let quotedDeliveryFee =
+            null;
+
+          let finalDeliveryFee =
+            0;
+
+          let deliveryFeeStatus =
+            "not_required";
+
+          let deliveryPaymentStatus =
+            "not_required";
+
+          if (
+            deliveryMethod ===
+            "delivery"
+          ) {
+            deliveryState =
+              cleanString(
+                shippingAddress.state,
+              );
+
+            deliveryCity =
+              cleanString(
+                shippingAddress.city,
+              );
+
+            const deliveryResult =
+              await calculateDeliveryFee({
+                state:
+                  deliveryState,
+
+                city:
+                  deliveryCity,
+              });
+
+            deliveryZoneId =
+              deliveryResult.zoneId;
+
+            if (
+              deliveryResult.status ===
+              "estimated"
+            ) {
+              estimatedDeliveryFee =
+                deliveryResult.fee;
+
+              finalDeliveryFee =
+                deliveryResult.fee;
+
+              deliveryFeeStatus =
+                "estimated";
+
+              deliveryPaymentStatus =
+                "pending";
+            }
+
+            if (
+              deliveryResult.status ===
+              "quote_required"
+            ) {
+              estimatedDeliveryFee =
+                0;
+
+              quotedDeliveryFee =
+                null;
+
+              finalDeliveryFee =
+                0;
+
+              deliveryFeeStatus =
+                "quote_required";
+
+              deliveryPaymentStatus =
+                "pending";
+            }
+          }
+
+          /*
+          |--------------------------------------------------------------------------
+          | ORDER TOTAL
+          |--------------------------------------------------------------------------
+          */
+
+          const shippingFee =
+            finalDeliveryFee;
 
           const total =
             subtotal +
@@ -535,6 +692,36 @@ router.post(
 
                   subtotal,
 
+                  /*
+                  |--------------------------------------------------------------------------
+                  | DELIVERY
+                  |--------------------------------------------------------------------------
+                  */
+
+                  deliveryMethod,
+
+                  deliveryState,
+
+                  deliveryCity,
+
+                  deliveryZoneId,
+
+                  estimatedDeliveryFee,
+
+                  quotedDeliveryFee,
+
+                  finalDeliveryFee,
+
+                  deliveryFeeStatus,
+
+                  deliveryPaymentStatus,
+
+                  /*
+                  |--------------------------------------------------------------------------
+                  | ORDER TOTALS
+                  |--------------------------------------------------------------------------
+                  */
+
                   shippingFee,
 
                   total,
@@ -547,32 +734,45 @@ router.post(
 
                   paymentMethod,
 
-                  shippingAddress: {
-                    fullName:
-                      cleanString(
-                        shippingAddress.fullName,
-                      ),
+                  /*
+                  |--------------------------------------------------------------------------
+                  | SHIPPING ADDRESS
+                  |--------------------------------------------------------------------------
+                  |
+                  | Pickup orders do not need a shipping address.
+                  |
+                  */
 
-                    phone:
-                      cleanString(
-                        shippingAddress.phone,
-                      ),
+                  shippingAddress:
+                    deliveryMethod ===
+                    "delivery"
+                      ? {
+                          fullName:
+                            cleanString(
+                              shippingAddress.fullName,
+                            ),
 
-                    address:
-                      cleanString(
-                        shippingAddress.address,
-                      ),
+                          phone:
+                            cleanString(
+                              shippingAddress.phone,
+                            ),
 
-                    city:
-                      cleanString(
-                        shippingAddress.city,
-                      ),
+                          address:
+                            cleanString(
+                              shippingAddress.address,
+                            ),
 
-                    state:
-                      cleanString(
-                        shippingAddress.state,
-                      ),
-                  },
+                          city:
+                            cleanString(
+                              shippingAddress.city,
+                            ),
+
+                          state:
+                            cleanString(
+                              shippingAddress.state,
+                            ),
+                        }
+                      : null,
                 },
               ],
               {
@@ -606,12 +806,14 @@ router.post(
                       item.quantity,
                   },
                 },
+
                 {
                   $inc: {
                     stock:
                       -item.quantity,
                   },
                 },
+
                 {
                   new: true,
                   session,
@@ -629,9 +831,19 @@ router.post(
         },
       );
 
-      return res.status(201).json(
-        createdOrder,
-      );
+      /*
+      |--------------------------------------------------------------------------
+      | SUCCESS
+      |--------------------------------------------------------------------------
+      */
+
+      return res.status(201).json({
+        message:
+          "Order created successfully",
+
+        order:
+          createdOrder,
+      });
     } catch (error) {
       console.error(
         "Create order error:",
@@ -646,7 +858,12 @@ router.post(
 
       const knownErrors = [
         "One or more products are unavailable",
+
         "Stock changed while processing your order. Please try again.",
+
+        "Delivery state is required",
+
+        "Delivery city is required",
       ];
 
       if (
@@ -723,7 +940,9 @@ router.get(
     try {
       const order =
         await Order.findOne({
-          _id: req.params.id,
+          _id:
+            req.params.id,
+
           userId:
             req.user.userId,
         });
@@ -922,19 +1141,21 @@ router.put(
 
           if (
             status ===
-              "cancelled"
+            "cancelled"
           ) {
             for (
               const item of order.items
             ) {
               await Product.findByIdAndUpdate(
                 item.productId,
+
                 {
                   $inc: {
                     stock:
                       item.quantity,
                   },
                 },
+
                 {
                   session,
                 },
@@ -950,8 +1171,8 @@ router.put(
           | PAYMENT STATUS
           |--------------------------------------------------------------------------
           |
-          | Cancelling an order does not automatically mean a payment was
-          | refunded. A real payment gateway will control this later.
+          | Cancelling an order does not automatically mean a payment
+          | was refunded. A real payment gateway will control this later.
           |
           */
 
@@ -970,10 +1191,12 @@ router.put(
             */
           }
 
+          await order.save({
+            session,
+          });
+
           updatedOrder =
-            await order.save({
-              session,
-            });
+            order;
         },
       );
 
@@ -1049,7 +1272,9 @@ router.put(
         async () => {
           const order =
             await Order.findOne({
-              _id: req.params.id,
+              _id:
+                req.params.id,
+
               userId:
                 req.user.userId,
             }).session(session);
@@ -1084,12 +1309,14 @@ router.put(
           ) {
             await Product.findByIdAndUpdate(
               item.productId,
+
               {
                 $inc: {
                   stock:
                     item.quantity,
                 },
               },
+
               {
                 session,
               },
@@ -1101,7 +1328,30 @@ router.put(
 
           /*
           |--------------------------------------------------------------------------
-          | PAYMENT
+          | DELIVERY PAYMENT
+          |--------------------------------------------------------------------------
+          |
+          | Delivery payment refund remains separate from order cancellation.
+          |
+          */
+
+          if (
+            order.deliveryPaymentStatus ===
+            "paid"
+          ) {
+            /*
+            |--------------------------------------------------------------------------
+            | TODO:
+            |
+            | Connect delivery payment refund logic here when
+            | real delivery payments are implemented.
+            |--------------------------------------------------------------------------
+            */
+          }
+
+          /*
+          |--------------------------------------------------------------------------
+          | PRODUCT PAYMENT
           |--------------------------------------------------------------------------
           |
           | Payment refund remains separate from cancellation.

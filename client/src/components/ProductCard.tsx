@@ -4,8 +4,21 @@ import {
   Star,
 } from "lucide-react";
 
+import {
+  useEffect,
+  useState,
+} from "react";
+
 import type { Product } from "../lib/api";
 import { addToCart } from "../lib/cart";
+import { useAuth } from "../context/AuthContext";
+
+import {
+  addToWishlist,
+  isWishlisted,
+  removeFromWishlist,
+  notifyWishlistChanged,
+} from "../lib/wishlist";
 
 type ProductCardProps = {
   product: Product;
@@ -59,6 +72,17 @@ function getProductImage(
 export function ProductCard({
   product,
 }: ProductCardProps) {
+  const { isAuthenticated } =
+    useAuth();
+
+  const [wishlisted, setWishlisted] =
+    useState(false);
+
+  const [
+    wishlistLoading,
+    setWishlistLoading,
+  ] = useState(false);
+
   const price = Number(
     product.price || 0,
   );
@@ -78,12 +102,108 @@ export function ProductCard({
       product.image,
     );
 
+  /*
+   * Load the current wishlist
+   * state whenever the product or
+   * authentication state changes.
+   */
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadWishlistState() {
+      try {
+        const saved =
+          await isWishlisted(
+            product._id,
+            isAuthenticated,
+          );
+
+        if (mounted) {
+          setWishlisted(saved);
+        }
+      } catch (error) {
+        console.error(
+          "Unable to load wishlist state:",
+          error,
+        );
+
+        if (mounted) {
+          setWishlisted(false);
+        }
+      }
+    }
+
+    loadWishlistState();
+
+    return () => {
+      mounted = false;
+    };
+  }, [
+    product._id,
+    isAuthenticated,
+  ]);
+
+  /*
+   * Add/remove product from wishlist.
+   */
+  const handleWishlistClick =
+    async (
+      event: React.MouseEvent<HTMLButtonElement>,
+    ) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (wishlistLoading) {
+        return;
+      }
+
+      try {
+        setWishlistLoading(true);
+
+        if (wishlisted) {
+          await removeFromWishlist(
+            product._id,
+            isAuthenticated,
+          );
+
+          setWishlisted(false);
+        } else {
+          await addToWishlist(
+            product,
+            isAuthenticated,
+          );
+
+          setWishlisted(true);
+        }
+
+        /*
+         * Tell Header and other
+         * wishlist-aware components
+         * that the wishlist changed.
+         */
+        notifyWishlistChanged();
+      } catch (error) {
+        console.error(
+          "Unable to update wishlist:",
+          error,
+        );
+      } finally {
+        setWishlistLoading(false);
+      }
+    };
+
   const handleAddToCart =
     async () => {
       try {
         await addToCart(
           product,
           1,
+        );
+
+        window.dispatchEvent(
+          new Event(
+            "cart:changed",
+          ),
         );
       } catch (error) {
         console.error(
@@ -157,29 +277,68 @@ export function ProductCard({
           )}
         </a>
 
+        {/* Wishlist button */}
         <button
           type="button"
-          aria-label={`Add ${product.name} to wishlist`}
-          className="
+          onClick={
+            handleWishlistClick
+          }
+          disabled={
+            wishlistLoading
+          }
+          aria-label={
+            wishlisted
+              ? `Remove ${product.name} from wishlist`
+              : `Add ${product.name} to wishlist`
+          }
+          aria-pressed={
+            wishlisted
+          }
+          className={`
             absolute
             right-3
             top-3
             grid
-            size-9
+            size-10
             place-items-center
             rounded-full
             border
-            border-slate-200
-            bg-white/90
-            text-slate-500
             shadow-sm
-            backdrop-blur
-            transition
-            hover:border-red-200
-            hover:text-red-500
-          "
+            backdrop-blur-md
+            transition-all
+            duration-200
+            hover:scale-110
+            active:scale-95
+            disabled:cursor-not-allowed
+            disabled:opacity-60
+
+            ${
+              wishlisted
+                ? `
+                  border-red-200
+                  bg-red-50
+                  text-red-500
+                  shadow-red-100
+                `
+                : `
+                  border-slate-200
+                  bg-white/90
+                  text-slate-500
+                  hover:border-red-200
+                  hover:bg-red-50
+                  hover:text-red-500
+                `
+            }
+          `}
         >
-          <Heart size={16} />
+          <Heart
+            size={18}
+            className={
+              wishlisted
+                ? "fill-current"
+                : ""
+            }
+          />
         </button>
 
         {product.category && (

@@ -1,7 +1,8 @@
 import {
   BrowserRouter,
-  Route,
   Routes,
+  Route,
+  Outlet,
   useParams,
 } from "react-router-dom";
 
@@ -37,6 +38,8 @@ import AdminOrderDetail from "./pages/admin/AdminOrderDetail";
 import AdminSettings from "./pages/admin/AdminSettings";
 
 import AccountSettings from "./pages/AccountSettings";
+import DeliveryPricing from "./pages/admin/DeliveryPricing";
+import Wishlist from "./pages/Wishlist";
 
 import {
   getProduct,
@@ -61,6 +64,18 @@ function StorefrontLayout({
 
       <Footer />
     </>
+  );
+}
+
+/* =========================================================
+   CUSTOMER STOREFRONT LAYOUT
+========================================================= */
+
+function CustomerStorefrontLayout() {
+  return (
+    <StorefrontLayout>
+      <Outlet />
+    </StorefrontLayout>
   );
 }
 
@@ -207,6 +222,11 @@ export default function App() {
           }
         />
 
+        <Route
+         path="/wishlist"
+         element={<Wishlist />}
+        />
+
         {/* =================================================
             AUTHENTICATION
         ================================================= */}
@@ -234,37 +254,39 @@ export default function App() {
         ================================================= */}
 
         <Route element={<ProtectedRoute />}>
+          <Route element={<CustomerStorefrontLayout />}>
 
-          <Route
-            path="/account"
-            element={<Account />}
-          />
+            <Route
+              path="/account"
+              element={<Account />}
+            />
 
-          <Route
-            path="/account/settings"
-            element={<AccountSettings />}
-          />
+            <Route
+              path="/account/settings"
+              element={<AccountSettings />}
+            />
 
-          <Route
-            path="/checkout"
-            element={<Checkout />}
-          />
+            <Route
+              path="/checkout"
+              element={<Checkout />}
+            />
 
-          <Route
-            path="/account/orders"
-            element={<Orders />}
-          />
+            <Route
+              path="/account/orders"
+              element={<Orders />}
+            />
 
-          <Route
-            path="/account/orders/:id"
-            element={<CustomerOrderDetail />}
-          />
+            <Route
+              path="/account/orders/:id"
+              element={<CustomerOrderDetail />}
+            />
 
-          <Route
-            path="/order-confirmation/:id"
-            element={<OrderConfirmation />}
-          />
+            <Route
+              path="/order-confirmation/:id"
+              element={<OrderConfirmation />}
+            />
 
+          </Route>
         </Route>
 
         {/* =================================================
@@ -330,6 +352,11 @@ export default function App() {
           <Route
             path="/admin/settings"
             element={<AdminSettings />}
+          />
+
+          <Route
+            path="/admin/delivery"
+            element={<DeliveryPricing />}
           />
 
         </Route>

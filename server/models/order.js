@@ -56,9 +56,13 @@ const orderSchema = new mongoose.Schema(
       required: true,
       validate: {
         validator: function (items) {
-          return Array.isArray(items) && items.length > 0;
+          return (
+            Array.isArray(items) &&
+            items.length > 0
+          );
         },
-        message: "Order must contain at least one item"
+        message:
+          "Order must contain at least one item"
       }
     },
 
@@ -67,6 +71,82 @@ const orderSchema = new mongoose.Schema(
       required: true,
       min: 0
     },
+
+    // --------------------------------------------------
+    // DELIVERY
+    // --------------------------------------------------
+
+    deliveryMethod: {
+      type: String,
+      enum: [
+        "pickup",
+        "delivery"
+      ],
+      default: "delivery"
+    },
+
+    deliveryState: {
+      type: String,
+      trim: true,
+      default: null
+    },
+
+    deliveryCity: {
+      type: String,
+      trim: true,
+      default: null
+    },
+
+    deliveryZoneId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "DeliveryZone",
+      default: null
+    },
+
+    estimatedDeliveryFee: {
+      type: Number,
+      min: 0,
+      default: 0
+    },
+
+    quotedDeliveryFee: {
+      type: Number,
+      min: 0,
+      default: null
+    },
+
+    finalDeliveryFee: {
+      type: Number,
+      min: 0,
+      default: 0
+    },
+
+    deliveryFeeStatus: {
+      type: String,
+      enum: [
+        "not_required",
+        "estimated",
+        "quote_required",
+        "quoted",
+        "finalized"
+      ],
+      default: "not_required"
+    },
+
+    deliveryPaymentStatus: {
+      type: String,
+      enum: [
+        "not_required",
+        "pending",
+        "paid",
+        "refunded"
+      ],
+      default: "not_required"
+    },
+
+    // --------------------------------------------------
+    // EXISTING SHIPPING FEE
+    // --------------------------------------------------
 
     shippingFee: {
       type: Number,

@@ -416,20 +416,20 @@ export default function OrderConfirmation() {
               <div className="mt-4 text-sm leading-6 text-slate-600">
 
                 <p className="font-semibold text-slate-900">
-                  {order.shippingAddress.fullName}
+                  {order.shippingAddress?.fullName ?? "—"}
                 </p>
 
                 <p>
-                  {order.shippingAddress.phone}
+                  {order.shippingAddress?.phone ?? "—"}
                 </p>
 
                 <p className="mt-2">
-                  {order.shippingAddress.address}
+                 {order.shippingAddress?.address ?? "—"}
                 </p>
 
                 <p>
-                  {order.shippingAddress.city},{" "}
-                  {order.shippingAddress.state}
+                  {order.shippingAddress?.city ?? "—"},{" "}
+                  {order.shippingAddress?.state ?? "—"}
                 </p>
 
               </div>

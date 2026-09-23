@@ -397,6 +397,29 @@ export type PaymentMethod =
   | "bank_transfer"
   | "online";
 
+/*
+|--------------------------------------------------------------------------
+| DELIVERY TYPES
+|--------------------------------------------------------------------------
+*/
+
+export type DeliveryMethod =
+  | "pickup"
+  | "delivery";
+
+export type DeliveryFeeStatus =
+  | "not_required"
+  | "estimated"
+  | "quote_required"
+  | "quoted"
+  | "finalized";
+
+export type DeliveryPaymentStatus =
+  | "not_required"
+  | "pending"
+  | "paid"
+  | "refunded";
+
 export type Order = {
   _id: string;
 
@@ -422,7 +445,25 @@ export type Order = {
 
   paymentMethod: PaymentMethod;
 
-  shippingAddress: ShippingAddress;
+  deliveryMethod: DeliveryMethod;
+
+  deliveryState: string | null;
+
+  deliveryCity: string | null;
+
+  deliveryZoneId: string | null;
+
+  estimatedDeliveryFee: number;
+
+  quotedDeliveryFee: number | null;
+
+  finalDeliveryFee: number;
+
+  deliveryFeeStatus: DeliveryFeeStatus;
+
+  deliveryPaymentStatus: DeliveryPaymentStatus;
+
+  shippingAddress?: ShippingAddress;
 
   createdAt?: string;
 
@@ -435,9 +476,11 @@ export type CreateOrderInput = {
     quantity: number;
   }[];
 
-  shippingAddress: ShippingAddress;
+  shippingAddress?: ShippingAddress;
 
   paymentMethod?: PaymentMethod;
+
+  deliveryMethod: DeliveryMethod;
 };
 
 export async function createOrder(
@@ -454,11 +497,6 @@ export async function createOrder(
     body: JSON.stringify(order),
   });
 
-  // Backend normally returns:
-  // { message, order }
-  //
-  // This also safely handles a response wrapped
-  // inside { data: { order } } or a direct order object.
   const createdOrder =
     response?.order ??
     response?.data?.order ??
@@ -704,6 +742,190 @@ export async function changeCustomerPassword(
         currentPassword,
         newPassword,
       }),
+    },
+  );
+}
+
+/*
+|--------------------------------------------------------------------------
+| DELIVERY PRICING
+|--------------------------------------------------------------------------
+*/
+
+export type DeliveryPricingType =
+  | "state"
+  | "city";
+
+export type DeliveryZone = {
+  _id: string;
+
+  type: DeliveryPricingType;
+
+  state: string;
+
+  city: string | null;
+
+  fee: number;
+
+  isActive: boolean;
+
+  createdAt?: string;
+
+  updatedAt?: string;
+};
+
+export type DeliveryQuote = {
+  status:
+    | "estimated"
+    | "quote_required";
+
+  source:
+    | "state"
+    | "city"
+    | "manual";
+
+  fee: number;
+
+  state: string;
+
+  city: string;
+
+  zoneId: string | null;
+};
+
+export type CreateDeliveryZoneInput = {
+  type: DeliveryPricingType;
+
+  state: string;
+
+  city?: string;
+
+  fee: number;
+};
+
+export type UpdateDeliveryZoneInput = {
+  fee?: number;
+
+  isActive?: boolean;
+};
+
+export async function getDeliveryQuote(
+  state: string,
+  city: string,
+): Promise<DeliveryQuote> {
+  const params = new URLSearchParams({
+    state,
+    city,
+  });
+
+  return request<DeliveryQuote>(
+    `/delivery/quote?${params.toString()}`,
+  );
+}
+
+export async function getAdminDeliveryZones(): Promise<
+  DeliveryZone[]
+> {
+  return request<DeliveryZone[]>(
+    "/delivery/admin",
+  );
+}
+
+export async function createDeliveryZone(
+  data: CreateDeliveryZoneInput,
+): Promise<{
+  message: string;
+  zone: DeliveryZone;
+}> {
+  return request<{
+    message: string;
+    zone: DeliveryZone;
+  }>("/delivery/admin", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateDeliveryZone(
+  id: string,
+  data: UpdateDeliveryZoneInput,
+): Promise<{
+  message: string;
+  zone: DeliveryZone;
+}> {
+  return request<{
+    message: string;
+    zone: DeliveryZone;
+  }>(`/delivery/admin/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteDeliveryZone(
+  id: string,
+): Promise<{
+  message: string;
+}> {
+  return request<{
+    message: string;
+  }>(`/delivery/admin/${id}`, {
+    method: "DELETE",
+  });
+}
+
+/*
+|--------------------------------------------------------------------------
+| WISHLIST
+|--------------------------------------------------------------------------
+*/
+
+export type WishlistResponse = {
+  products: Product[];
+};
+
+export type WishlistCheckResponse = {
+  isWishlisted: boolean;
+};
+
+export async function getWishlist(): Promise<WishlistResponse> {
+  return request<WishlistResponse>(
+    "/wishlist",
+    {
+      method: "GET",
+    },
+  );
+}
+
+export async function addToWishlist(
+  productId: string,
+): Promise<WishlistResponse> {
+  return request<WishlistResponse>(
+    `/wishlist/${productId}`,
+    {
+      method: "POST",
+    },
+  );
+}
+
+export async function removeFromWishlist(
+  productId: string,
+): Promise<WishlistResponse> {
+  return request<WishlistResponse>(
+    `/wishlist/${productId}`,
+    {
+      method: "DELETE",
+    },
+  );
+}
+
+export async function checkWishlist(
+  productId: string,
+): Promise<WishlistCheckResponse> {
+  return request<WishlistCheckResponse>(
+    `/wishlist/${productId}/check`,
+    {
+      method: "GET",
     },
   );
 }

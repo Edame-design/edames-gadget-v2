@@ -117,6 +117,12 @@ const analyticsRoutes =
 const accountRoutes =
   require("./routes/accountRoutes");
 
+const deliveryRoutes =
+  require("./routes/deliveryRoutes");
+
+const wishlistRoutes =
+  require("./routes/wishlistRoutes");
+
 /*
 |--------------------------------------------------------------------------
 | API ROUTES
@@ -136,6 +142,16 @@ app.use(
 app.use(
   "/api/account",
   accountRoutes,
+);
+
+app.use(
+  "/api/delivery",
+  deliveryRoutes,
+);
+
+app.use(
+  "/api/wishlist",
+  wishlistRoutes,
 );
 
 /*
